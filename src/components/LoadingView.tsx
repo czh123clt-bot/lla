@@ -14,6 +14,12 @@ interface LoadingViewProps {
 export function LoadingView({ duration, onFinished }: LoadingViewProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
   const startTimeRef = useRef<number | null>(null);
+  const onFinishedRef = useRef(onFinished);
+
+  // Update ref when onFinished changes
+  useEffect(() => {
+    onFinishedRef.current = onFinished;
+  }, [onFinished]);
 
   useEffect(() => {
     let animationFrameId: number;
@@ -31,7 +37,7 @@ export function LoadingView({ duration, onFinished }: LoadingViewProps) {
       if (remaining > 0) {
         animationFrameId = requestAnimationFrame(tick);
       } else {
-        onFinished();
+        onFinishedRef.current();
       }
     };
 
@@ -40,7 +46,7 @@ export function LoadingView({ duration, onFinished }: LoadingViewProps) {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [duration, onFinished]);
+  }, [duration]);
 
   // Calculate percentage of progress (from 0 to 100)
   const progress = ((duration - timeLeft) / duration) * 100;

@@ -59,9 +59,7 @@ export function ResultView({ result, onReset }: ResultViewProps) {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+    <div
       className="flex flex-col items-center justify-between min-h-full py-8 px-6 space-y-4 overflow-hidden"
     >
       {/* Top Header */}
@@ -157,7 +155,7 @@ export function ResultView({ result, onReset }: ResultViewProps) {
           <RefreshCw size={14} />
           <span>重新查询</span>
         </button>
-        <div className="text-[10px] font-mono tracking-[0.4em] text-zinc-300 uppercase py-2 flex flex-col items-center space-y-1 opacity-40">
+        <div className="text-[10px] font-mono tracking-[0.4em] text-zinc-500 uppercase py-2 flex flex-col items-center space-y-1 opacity-80">
           <span>{result.constellationPinyin.toUpperCase()} ARCHIVE NODE</span>
         </div>
       </div>
@@ -197,14 +195,14 @@ export function ResultView({ result, onReset }: ResultViewProps) {
             </div>
 
             <div className="mt-6 pt-6 border-t border-zinc-100 flex flex-col items-center space-y-4">
-              <div className="text-[9px] font-mono tracking-[0.4em] text-zinc-300 uppercase text-center space-y-1">
-                 <p className="text-zinc-200">{result.constellationPinyin.toUpperCase()} ARCHIVE NODE</p>
+              <div className="text-[9px] font-mono tracking-[0.4em] text-zinc-400 uppercase text-center space-y-1">
+                 <p className="text-zinc-500">{result.constellationPinyin.toUpperCase()} ARCHIVE NODE</p>
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
 

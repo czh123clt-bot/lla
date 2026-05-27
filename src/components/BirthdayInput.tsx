@@ -25,10 +25,7 @@ export function BirthdayInput({ onComplete }: BirthdayInputProps) {
   }, []);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
+    <div 
       className="flex flex-col items-center justify-center min-h-full py-6 px-6"
     >
       <div className="text-center space-y-6 mb-8 relative">
@@ -101,7 +98,6 @@ export function BirthdayInput({ onComplete }: BirthdayInputProps) {
             <span className="relative z-10">开始追踪</span>
             {isValidDate && (
               <motion.div 
-                layoutId="btn-bg"
                 className="absolute inset-0 bg-zinc-800" 
                 initial={{ x: "-100%" }}
                 animate={{ x: "100%" }}
@@ -141,6 +137,6 @@ export function BirthdayInput({ onComplete }: BirthdayInputProps) {
           </p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
