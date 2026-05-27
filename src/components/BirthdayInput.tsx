@@ -4,7 +4,7 @@
  */
 
 import { motion } from "motion/react";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, ChangeEvent, KeyboardEvent } from "react";
 import { parseBirthday } from "../utils/magic";
 
 interface BirthdayInputProps {
@@ -12,17 +12,70 @@ interface BirthdayInputProps {
 }
 
 export function BirthdayInput({ onComplete }: BirthdayInputProps) {
-  const [value, setValue] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [year, setYear] = useState("");
+  const [month, setMonth] = useState("");
+  const [day, setDay] = useState("");
+
+  const yearRef = useRef<HTMLInputElement>(null);
+  const monthRef = useRef<HTMLInputElement>(null);
+  const dayRef = useRef<HTMLInputElement>(null);
 
   const isValidDate = useMemo(() => {
-    return parseBirthday(value) !== null;
-  }, [value]);
+    if (year.length < 4 || month.length < 1 || day.length < 1) return false;
+    const formattedMonth = month.padStart(2, "0");
+    const formattedDay = day.padStart(2, "0");
+    const combined = `${year}${formattedMonth}${formattedDay}`;
+    return parseBirthday(combined) !== null;
+  }, [year, month, day]);
 
-  // Auto focus for mobile experience
+  // Auto focus Year on mount
   useEffect(() => {
-    inputRef.current?.focus();
+    yearRef.current?.focus();
   }, []);
+
+  const handleYearChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+    setYear(val);
+    if (val.length === 4) {
+      monthRef.current?.focus();
+    }
+  };
+
+  const handleMonthChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 2);
+    setMonth(val);
+    if (val.length === 2) {
+      dayRef.current?.focus();
+    }
+  };
+
+  const handleMonthKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && month === "") {
+      yearRef.current?.focus();
+    }
+  };
+
+  const handleDayChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 2);
+    setDay(val);
+  };
+
+  const handleDayKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && day === "") {
+      monthRef.current?.focus();
+    }
+  };
+
+  const handleSubmit = () => {
+    if (isValidDate) {
+      const formattedMonth = month.padStart(2, "0");
+      const formattedDay = day.padStart(2, "0");
+      const combined = `${year}${formattedMonth}${formattedDay}`;
+      onComplete(combined);
+    }
+  };
+
+  const totalLength = year.length + month.length + day.length;
 
   return (
     <div 
@@ -62,53 +115,81 @@ export function BirthdayInput({ onComplete }: BirthdayInputProps) {
         </div>
       </div>
 
-      <div className="w-full flex flex-col items-center space-y-8">
-        <div className="relative w-full max-w-[320px] group">
-          {/* Subtle frame corners */}
-          <div className="absolute -top-4 -left-4 w-4 h-4 border-t border-l border-zinc-200" />
-          <div className="absolute -bottom-4 -right-4 w-4 h-4 border-b border-r border-zinc-200" />
-          
-          <input
-            ref={inputRef}
-            type="tel"
-            value={value}
-            onChange={(e) => setValue(e.target.value.replace(/\D/g, "").slice(0, 8))}
-            className="w-full bg-transparent border-b border-zinc-200 py-4 text-4xl text-center font-mono tracking-[0.4em] focus:outline-none focus:border-zinc-500 transition-all duration-700 text-zinc-800 placeholder:text-zinc-100"
-            placeholder="YYYYMMDD"
-            maxLength={8}
-          />
-          
-          <div className="absolute -bottom-1 left-0 w-full flex justify-between px-1 opacity-20 group-focus-within:opacity-100 transition-opacity duration-700">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="w-[1px] h-2 bg-zinc-400" />
-            ))}
+      <div className="w-full flex flex-col items-center space-y-10">
+        {/* Split input fields: 年, 月, 日 */}
+        <div className="flex items-center justify-center space-x-3 w-full max-w-[340px]">
+          {/* Year Input Box */}
+          <div className="flex-[1.5] flex flex-col items-center space-y-2">
+            <div className="relative w-full h-20 bg-white border-2 border-zinc-900 rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] focus-within:shadow-[6px_6px_0px_0px_rgba(24,24,27,1)] transition-all duration-300">
+              <input
+                ref={yearRef}
+                type="tel"
+                value={year}
+                onChange={handleYearChange}
+                className="w-full bg-transparent text-center font-mono text-2xl font-extrabold text-zinc-900 focus:outline-none placeholder:text-zinc-200"
+                placeholder="YYYY"
+                maxLength={4}
+              />
+            </div>
+            <span className="text-[9px] font-mono tracking-[0.2em] text-zinc-400 font-bold uppercase">年 / YEAR</span>
+          </div>
+
+          {/* Separator / Dot */}
+          <div className="text-zinc-600 font-extrabold text-lg pb-6 select-none">•</div>
+
+          {/* Month Input Box */}
+          <div className="flex-1 flex flex-col items-center space-y-2">
+            <div className="relative w-full h-20 bg-white border-2 border-zinc-900 rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] focus-within:shadow-[6px_6px_0px_0px_rgba(24,24,27,1)] transition-all duration-300">
+              <input
+                ref={monthRef}
+                type="tel"
+                value={month}
+                onChange={handleMonthChange}
+                onKeyDown={handleMonthKeyDown}
+                className="w-full bg-transparent text-center font-mono text-2xl font-extrabold text-zinc-900 focus:outline-none placeholder:text-zinc-200"
+                placeholder="MM"
+                maxLength={2}
+              />
+            </div>
+            <span className="text-[9px] font-mono tracking-[0.2em] text-zinc-400 font-bold uppercase">月 / MM</span>
+          </div>
+
+          {/* Separator / Dot */}
+          <div className="text-zinc-600 font-extrabold text-lg pb-6 select-none">•</div>
+
+          {/* Day Input Box */}
+          <div className="flex-1 flex flex-col items-center space-y-2">
+            <div className="relative w-full h-20 bg-white border-2 border-zinc-900 rounded-xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] focus-within:shadow-[6px_6px_0px_0px_rgba(24,24,27,1)] transition-all duration-300">
+              <input
+                ref={dayRef}
+                type="tel"
+                value={day}
+                onChange={handleDayChange}
+                onKeyDown={handleDayKeyDown}
+                className="w-full bg-transparent text-center font-mono text-2xl font-extrabold text-zinc-900 focus:outline-none placeholder:text-zinc-200"
+                placeholder="DD"
+                maxLength={2}
+              />
+            </div>
+            <span className="text-[9px] font-mono tracking-[0.2em] text-zinc-400 font-bold uppercase">日 / DD</span>
           </div>
         </div>
 
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center w-full space-y-4">
           <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => isValidDate && onComplete(value)}
+            whileTap={isValidDate ? { scale: 0.97 } : {}}
+            onClick={handleSubmit}
             disabled={!isValidDate}
-            className={`group relative overflow-hidden px-16 py-4 rounded-none border transition-all duration-700 text-[10px] tracking-[0.5em] font-light uppercase
+            className={`w-full max-w-[280px] h-14 rounded-xl border-2 tracking-[0.4em] font-sans font-extrabold text-xs transition-all duration-300 uppercase select-none
               ${isValidDate 
-                ? "bg-zinc-900 text-white border-zinc-900" 
-                : "bg-transparent text-zinc-300 border-zinc-100 cursor-not-allowed"}`}
+                ? "bg-zinc-950 text-white border-zinc-950 hover:bg-zinc-800 shadow-[4px_4px_0px_0px_rgba(24,24,27,0.15)] hover:shadow-[5px_5px_0px_0px_rgba(24,24,27,0.25)] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer" 
+                : "bg-transparent text-zinc-300 border-zinc-200 cursor-not-allowed"}`}
           >
-            <span className="relative z-10">开始追踪</span>
-            {isValidDate && (
-              <motion.div 
-                className="absolute inset-0 bg-zinc-800" 
-                initial={{ x: "-100%" }}
-                animate={{ x: "100%" }}
-                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                style={{ opacity: 0.1 }}
-              />
-            )}
+            开始追踪
           </motion.button>
           
           <p className="text-[9px] font-mono text-zinc-300 tracking-[0.2em]">
-            {value.length}/8 DIGITS
+            {totalLength}/8 DIGITS
           </p>
         </div>
       </div>
@@ -121,7 +202,7 @@ export function BirthdayInput({ onComplete }: BirthdayInputProps) {
               key={i}
               initial={false}
               animate={{
-                backgroundColor: value.length > i ? "#3f3f46" : "#e4e4e7"
+                backgroundColor: totalLength > i ? "#3f3f46" : "#e4e4e7"
               }}
               className="w-2 h-2 rounded-full transition-colors"
             />
